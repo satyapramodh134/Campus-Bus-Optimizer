@@ -1,16 +1,32 @@
+
 import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import time
 
-# Page Configuration
-st.set_page_config(page_title="Project 7: Campus Bus Route Optimizer", layout="wide")
+# ==========================================
+# 1. PAGE CONFIGURATION & STYLING
+# ==========================================
+st.set_page_config(
+    page_title="Project 7: Campus Bus Route Optimizer",
+    page_icon="🚌",
+    layout="wide"
+)
+
+# Custom Styling (Pro UI Theme)
+st.markdown("""
+    <style>
+    .main { padding: 1rem; }
+    .stButton>button { width: 100%; font-weight: bold; }
+    .stMetric { background-color: #f0f2f6; padding: 10px; border-radius: 8px; }
+    </style>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# SIDEBAR NAVIGATION
+# 2. SIDEBAR NAVIGATION & TIMETABLE
 # ==========================================
-st.sidebar.markdown("🎓 **Navigation Menu**")
+st.sidebar.title("🎓 Project Navigation")
 st.sidebar.caption("JNTUK R23 B.Tech AI & DS")
 
 selected_page = st.sidebar.radio(
@@ -20,7 +36,8 @@ selected_page = st.sidebar.radio(
         "Subjects used in project",
         "Programming used",
         "AI/ML layer",
-        "Analytics & Graphs",
+        "Analytics & Crowd Control",
+        "Bus Timetable & Schedule",
         "LIVE DEMO & GPS Tracker"
     ]
 )
@@ -34,7 +51,7 @@ st.sidebar.info(
 )
 
 # ==========================================
-# DATA & GRAPH INITIALIZATION
+# 3. BASE DATA INITIALIZATION
 # ==========================================
 bus_stops = {
     "Main Gate": {"density": 10, "lat": 17.3850, "lon": 78.4867},
@@ -62,13 +79,21 @@ road_network = [
     ("Admin Building", "Hostel Block A", 1.4, 4)
 ]
 
+# Session State for Dynamic Density Sliders
+if "stop_densities" not in st.session_state:
+    st.session_state.stop_densities = {stop: info["density"] for stop, info in bus_stops.items()}
+
+# Construct Graph with Dynamic Densities
 G = nx.Graph()
 for stop, info in bus_stops.items():
-    G.add_node(stop, density=info["density"], lat=info["lat"], lon=info["lon"])
+    current_density = st.session_state.stop_densities.get(stop, info["density"])
+    G.add_node(stop, density=current_density, lat=info["lat"], lon=info["lon"])
 
 w1, w2, w3 = 1.0, 0.5, 0.01
 for u, v, dist, time_min in road_network:
-    avg_density = (bus_stops[u]["density"] + bus_stops[v]["density"]) / 2.0
+    d_u = st.session_state.stop_densities.get(u, bus_stops[u]["density"])
+    d_v = st.session_state.stop_densities.get(v, bus_stops[v]["density"])
+    avg_density = (d_u + d_v) / 2.0
     cost = max((w1 * dist) + (w2 * time_min) - (w3 * avg_density), 0.1)
     G.add_edge(u, v, distance=dist, time=time_min, weight=cost)
 
@@ -81,131 +106,93 @@ if selected_page == "Home":
     
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.subheader("📌 Project Background & Problem Statement")
-        st.markdown("""
-        * **The Core Challenge:** Modern university campuses experience severe traffic congestion during peak operational hours (morning arrival, lunch breaks, lab transitions). Traditional public transit routing relies on **Static Shortest Path Algorithms** (like fixed distance Google Maps), which completely ignore real-time waiting passenger counts at stops.
-        * **The Proposed Solution:** **Project 7: Campus Bus Route Optimizer** transforms campus road topology into a real-time **Dynamic Crowd-Aware Navigation System**. It factors in three core metrics: physical route distance, travel duration, and dynamic student density at origin-destination stops.
-        * **Key System Deliverables:**
-            * Real-time path optimization using **Dijkstra's Algorithm**.
-            * Interactive Cloud Dashboard built via **Streamlit**.
-            * **Live GPS Detector Simulation** providing real-time latitude/longitude coordinate tracking and estimated time of arrival (ETA).
-        """)
+        st.subheader("📌 Project Overview")
+        st.write("Project 7 calculates optimal campus bus paths considering **distance**, **travel time**, and **student density** using **Dijkstra's Algorithm**.")
         st.markdown("---")
         st.subheader("📊 Key Operational Metrics")
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Campus Stops", "12 Active")
         k2.metric("Road Links", "15 Routes")
-        k3.metric("Peak Crowd", "150 Students")
+        max_density_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
+        k3.metric("Peak Stop", max_density_stop)
         k4.metric("GPS Sync", "Real-Time")
     with col2:
         st.subheader("📋 Academic Details")
-        st.info(
-            "**Institution:** JNTUK R23\n\n"
-            "**Branch:** AI & Data Science\n\n"
-            "**Course:** Data Structures & Algorithms\n\n"
-            "**Primary Engine:** Dijkstra's Algorithm"
-        )
+        st.info("**Institution:** JNTUK R23\n\n**Branch:** AI & DS\n\n**Algorithm:** Dynamic Dijkstra's Engine")
 
 # ==========================================
 # PAGE 2: SUBJECTS USED
 # ==========================================
 elif selected_page == "Subjects used in project":
-    st.title("📚 Academic Subjects & Theoretical Foundation")
-    
-    st.subheader("1. Discrete Mathematics & Graph Theory")
-    st.markdown("""
-    * Models the physical campus as an undirected weighted network graph $G = (V, E)$.
-    * **Vertices ($V$):** Represent 12 physical campus stops (e.g., Library, Hostels, Main Gate).
-    * **Edges ($E$):** Represent 15 interconnecting campus road links.
-    """)
-    
-    st.subheader("2. Design & Analysis of Algorithms (DAA)")
-    st.markdown("""
-    * Employs **Dijkstra’s Shortest Path Algorithm** utilizing a Priority Queue (Min-Heap) data structure.
-    * Time Complexity achieved: $\mathcal{O}((|E| + |V|) \log |V|)$, ensuring instant path computation even under heavy network load.
-    """)
-    
-    st.subheader("3. Linear Algebra & Matrix Operations")
-    st.markdown("""
-    * Encodes network links into **Adjacency Matrices** and computes real-time scalar transformations on student density vectors.
-    """)
-    
-    st.subheader("4. Applied Data Analytics & Kinematics")
-    st.markdown("""
-    * Uses kinematic velocity-time formulas ($\Delta t = \\frac{\Delta s}{v_{avg}}$) to estimate segment travel times while tracking crowd variance across peak hours.
-    """)
+    st.title("📚 Academic Subjects")
+    st.subheader("1. Graph Theory")
+    st.write("Campus network represented as undirected weighted graphs $G = (V, E)$.")
+    st.subheader("2. Design & Analysis of Algorithms")
+    st.write("Shortest route evaluation using Dijkstra's algorithm.")
 
 # ==========================================
 # PAGE 3: PROGRAMMING USED
 # ==========================================
 elif selected_page == "Programming used":
-    st.title("💻 Software Stack & System Architecture")
-    
-    st.subheader("1. Python 3.10+ (Core Engine)")
-    st.write("Serves as the primary back-end programming language due to its high computational efficiency and rich ecosystem for scientific computing.")
-    
-    st.subheader("2. NetworkX (Graph Data Engine)")
-    st.write("Handles high-level graph creation, adjacency edge manipulation, and runs the optimized Dijkstra search algorithm under the hood.")
-    
-    st.subheader("3. Streamlit Framework (Web Interface)")
-    st.write("Enables rapid building of responsive, modern web dashboards completely in Python without needing external HTML/CSS/JavaScript code.")
-    
-    st.subheader("4. Matplotlib & Pandas (Visualization & Data Processing)")
-    st.markdown("""
-    * **Pandas:** Manages real-time dataframes for student density, road segments, and GPS coordinates.
-    * **Matplotlib:** Renders the graphical network topology with color-coded path highlighting (e.g., active path in Red).
-    """)
-    
-    st.subheader("5. Git & Streamlit Cloud (CI/CD Deployment)")
-    st.write("Code is version-controlled via GitHub repositories and continuously deployed live to Streamlit Cloud for global web access.")
+    st.title("💻 Stack Used")
+    st.markdown("### Python 3.10+, NetworkX, Streamlit, Matplotlib, Pandas")
 
 # ==========================================
 # PAGE 4: AI/ML LAYER
 # ==========================================
 elif selected_page == "AI/ML layer":
-    st.title("🤖 Dynamic Cost Engine & Mathematical Modeling")
-    
-    st.write("Standard shortest path algorithms evaluate routes purely on distance ($d_{ij}$). Our optimization engine introduces a custom **Weighted Composite Objective Function**:")
-    
-    st.latex(r"Cost(u, v) = w_1 \cdot Distance(u, v) + w_2 \cdot Time(u, v) - w_3 \cdot \left(\frac{Density_u + Density_v}{2}\right)")
-    
-    st.markdown("""
-    ### 🧮 Mathematical Breakdown:
-    * **$Distance(u, v)$**: Physical length of the road segment in kilometers.
-    * **$Time(u, v)$**: Base travel duration in minutes based on bus speed limits.
-    * **$Density_u, Density_v$**: Real-time count of students waiting at origin $u$ and destination $v$.
-    * **Weight Factors ($w_1=1.0, w_2=0.5, w_3=0.01$)**: Hyperparameters that balance physical distance against student waiting demand.
-    
-    ### 💡 Core Intelligence:
-    By subtracting the averaged student density factor, high-crowd bus stops receive a lower cost penalty, automatically forcing Dijkstra's algorithm to prioritize high-demand campus hubs during peak hours!
-    """)
+    st.title("🤖 Optimization Engine")
+    st.latex(r"Cost(u, v) = w_1 \cdot Distance + w_2 \cdot Time - w_3 \cdot Density")
 
 # ==========================================
-# PAGE 5: ANALYTICS & GRAPHS
+# PAGE 5: ANALYTICS & DYNAMIC CROWD CONTROL
 # ==========================================
-elif selected_page == "Analytics & Graphs":
-    st.title("📊 Data Analytics & Decision Support")
+elif selected_page == "Analytics & Crowd Control":
+    st.title("📊 Dynamic Student Crowd Density Control")
+    st.write("Adjust the sliders below to simulate live crowd density updates at any bus stop:")
     
-    st.subheader("1. Student Crowd Analytics")
-    st.write("Renders dynamic real-time bar graphs ranking campus bus stops by waiting student volume. Identifies high-load hubs (e.g., Engineering Block with 150 students vs Medical Center with 20 students).")
+    c1, c2 = st.columns(2)
+    stops_list = list(bus_stops.keys())
     
-    stops_df = pd.DataFrame([{"Stop": k, "Students Waiting": v["density"]} for k, v in bus_stops.items()])
-    stops_df = stops_df.sort_values(by="Students Waiting", ascending=False)
-    st.bar_chart(stops_df.set_index("Stop"))
-    
+    with c1:
+        for stop in stops_list[:6]:
+            st.session_state.stop_densities[stop] = st.slider(
+                f"👥 {stop}:", 0, 300, st.session_state.stop_densities[stop]
+            )
+            
+    with c2:
+        for stop in stops_list[6:]:
+            st.session_state.stop_densities[stop] = st.slider(
+                f"👥 {stop}:", 0, 300, st.session_state.stop_densities[stop]
+            )
+            
     st.markdown("---")
-    st.subheader("2. Network Road Segment Profiling")
-    st.write("Generates empirical tabular views comparing segment lengths (km) versus travel latency (mins) to help transport managers identify bottleneck corridors.")
-    
-    edges_data = [{"Route": f"{u} ➔ {v}", "Distance (km)": d, "Time (min)": t} for u, v, d, t in road_network]
-    edges_df = pd.DataFrame(edges_data)
-    st.dataframe(edges_df, use_container_width=True)
+    st.subheader("📈 Live Density Distribution")
+    df = pd.DataFrame([{"Stop": k, "Students Waiting": v} for k, v in st.session_state.stop_densities.items()])
+    st.bar_chart(df.set_index("Stop"))
 
 # ==========================================
-# PAGE 6: LIVE DEMO & GPS TRACKER
+# PAGE 6: BUS TIMETABLE & SCHEDULE
+# ==========================================
+elif selected_page == "Bus Timetable & Schedule":
+    st.title("⏱️ Campus Bus Schedule & Timetable")
+    st.write("Daily operational timings for campus shuttles:")
+    
+    timetable_data = {
+        "Shuttle ID": ["Bus 1 (North Express)", "Bus 2 (South Circuit)", "Bus 3 (Hostel Loop)", "Bus 4 (Central Express)"],
+        "Start Time": ["08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM"],
+        "Frequency": ["Every 15 mins", "Every 20 mins", "Every 10 mins", "Every 15 mins"],
+        "Primary Route": ["Main Gate ➔ Eng. Block", "Admin ➔ Medical Center", "Hostels ➔ Canteen", "Library ➔ Research Park"],
+        "Status": ["🟢 Active", "🟢 Active", "🟡 High Crowd", "🟢 Active"]
+    }
+    
+    st.table(pd.DataFrame(timetable_data))
+
+# ==========================================
+# PAGE 7: LIVE DEMO & GPS TRACKER
 # ==========================================
 elif selected_page == "LIVE DEMO & GPS Tracker":
-    st.title("⚡ Real-Time Tracking & Simulation Workflow")
+    st.title("⚡ Live Navigation & GPS Simulation Detector")
     
     col_input, col_display = st.columns([1, 2])
     
@@ -230,9 +217,9 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
             m2.metric("Time", f"{total_time:.1f} mins")
             m3.metric("Stops", f"{len(path)}")
 
-    # Visual Map
+    # Visual Topology Graph Map
     st.markdown("---")
-    st.subheader("🗺️ Topological Graph View")
+    st.subheader("🗺️ Campus Network Graph Route")
     fig, ax = plt.subplots(figsize=(10, 4))
     pos = nx.spring_layout(G, seed=42)
     nx.draw_networkx(G, pos, node_color='skyblue', edge_color='gray', node_size=800, ax=ax, font_size=8)
@@ -242,28 +229,39 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
     plt.axis('off')
     st.pyplot(fig)
     
-    # GUARANTEED LIVE GPS SIMULATION
+    # LIVE GPS SIMULATION WITH AUDIO ALERT
     if start_sim and start_stop != end_stop:
         st.markdown("---")
-        st.subheader("📡 Live GPS Bus Tracker (Active Connection)")
+        st.subheader("📡 Live GPS Bus Telemetry & Tracking")
         
         status_box = st.empty()
-        map_box = st.empty()
         prog_bar = st.progress(0)
         
         for idx, current_stop in enumerate(path):
             lat = bus_stops[current_stop]["lat"]
             lon = bus_stops[current_stop]["lon"]
             
-            status_box.info(f"🚌 **Shuttle Current Location:** **{current_stop}** | 📍 Lat: `{lat}`, Lon: `{lon}`")
-            
-            # Realtime map update
-            gps_data = pd.DataFrame([{"lat": lat, "lon": lon}])
-            map_box.map(gps_data, zoom=14)
+            status_box.info(
+                f"🚌 **Shuttle Status: IN-TRANSIT**\n\n"
+                f"📍 **Current Stop:** `{current_stop}`\n"
+                f"🌐 **GPS Coordinates:** Latitude: `{lat}`, Longitude: `{lon}`\n"
+                f"📶 **Signal:** 5G Connected | **Speed:** 40 km/h"
+            )
             
             prog_bar.progress((idx + 1) / len(path))
             time.sleep(sim_speed)
             
         st.balloons()
-        st.success("🎯 Bus Arrived at Destination Successfully!")
+        
+        # Audio Notification Alert (HTML5 Audio chime)
+        st.components.v1.html(
+            """
+            <audio autoplay>
+              <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+            </audio>
+            """,
+            height=0
+        )
+        
+        st.success(f"🎯 **Arrival Alert:** Bus Arrived at `{end_stop}` Successfully!")
 
