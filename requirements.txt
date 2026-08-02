@@ -1,3 +1,6 @@
 streamlit
 networkx
 matplotlib
+pandas
+qrcode
+pillow
