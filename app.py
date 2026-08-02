@@ -3,6 +3,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import time
+import qrcode
+from io import BytesIO
 
 # ==========================================
 # 1. PAGE CONFIGURATION & STYLING
@@ -13,7 +15,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom Styling (Pro UI Theme)
+# Custom Styling
 st.markdown("""
     <style>
     .main { padding: 1rem; }
@@ -39,7 +41,8 @@ selected_page = st.sidebar.radio(
         "Bus Timetable & Schedule",
         "LIVE DEMO & GPS Tracker",
         "🌱 Eco & Efficiency Analytics",
-        "🤖 Campus AI Transit Assistant"
+        "🤖 Campus AI Transit Assistant",
+        "🎟️ QR Digital Bus Pass"
     ]
 )
 
@@ -80,11 +83,17 @@ road_network = [
     ("Admin Building", "Hostel Block A", 1.4, 4)
 ]
 
-# Session State for Dynamic Density Sliders
+# Session State Initializations
 if "stop_densities" not in st.session_state:
     st.session_state.stop_densities = {stop: info["density"] for stop, info in bus_stops.items()}
 
-# Construct Graph with Dynamic Densities
+if "weather" not in st.session_state:
+    st.session_state.weather = "Clear Sky"
+
+# Weather multiplier logic
+weather_multiplier = 1.5 if st.session_state.weather in ["Heavy Rain", "Dense Fog"] else 1.0
+
+# Construct Graph
 G = nx.Graph()
 for stop, info in bus_stops.items():
     current_density = st.session_state.stop_densities.get(stop, info["density"])
@@ -95,8 +104,14 @@ for u, v, dist, time_min in road_network:
     d_u = st.session_state.stop_densities.get(u, bus_stops[u]["density"])
     d_v = st.session_state.stop_densities.get(v, bus_stops[v]["density"])
     avg_density = (d_u + d_v) / 2.0
-    cost = max((w1 * dist) + (w2 * time_min) - (w3 * avg_density), 0.1)
-    G.add_edge(u, v, distance=dist, time=time_min, weight=cost)
+    adjusted_time = time_min * weather_multiplier
+    cost = max((w1 * dist) + (w2 * adjusted_time) - (w3 * avg_density), 0.1)
+    G.add_edge(u, v, distance=dist, time=adjusted_time, weight=cost)
+
+# ==========================================
+# ANNOUNCEMENT BANNER
+# ==========================================
+st.warning("📢 **Campus Notice:** Real-time dynamic optimization active. Weather & crowd parameters auto-updated.")
 
 # ==========================================
 # PAGE 1: HOME
@@ -108,7 +123,7 @@ if selected_page == "Home":
     col1, col2 = st.columns([2, 1])
     with col1:
         st.subheader("📌 Project Overview")
-        st.write("Project 7 calculates optimal campus bus paths considering **distance**, **travel time**, and **student density** using **Dijkstra's Algorithm**.")
+        st.write("Project 7 calculates optimal campus bus paths considering **distance**, **travel time**, **weather delay**, and **student density** using **Dijkstra's Algorithm**.")
         st.markdown("---")
         st.subheader("📊 Key Operational Metrics")
         k1, k2, k3, k4 = st.columns(4)
@@ -116,7 +131,7 @@ if selected_page == "Home":
         k2.metric("Road Links", "15 Routes")
         max_density_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
         k3.metric("Peak Stop", max_density_stop)
-        k4.metric("GPS Sync", "Real-Time")
+        k4.metric("Weather State", st.session_state.weather)
     with col2:
         st.subheader("📋 Academic Details")
         st.info("**Institution:** JNTUK R23\n\n**Branch:** AI & DS\n\n**Algorithm:** Dynamic Dijkstra's Engine")
@@ -150,21 +165,31 @@ elif selected_page == "Subjects used in project":
 # ==========================================
 elif selected_page == "Programming used":
     st.title("💻 Stack Used")
-    st.markdown("### Python 3.10+, NetworkX, Streamlit, Matplotlib, Pandas")
+    st.markdown("### Python 3.10+, NetworkX, Streamlit, Matplotlib, Pandas, QRCode")
 
 # ==========================================
 # PAGE 4: AI/ML LAYER
 # ==========================================
 elif selected_page == "AI/ML layer":
     st.title("🤖 Optimization Engine & AI Heuristic Layer")
-    st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot t_{uv} - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
+    st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot (t_{uv} \cdot \text{Weather}) - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
 
 # ==========================================
 # PAGE 5: ANALYTICS & DYNAMIC CROWD CONTROL
 # ==========================================
 elif selected_page == "Analytics & Crowd Control":
-    st.title("📊 Dynamic Student Crowd Density Control")
-    st.write("Adjust the sliders below to simulate live crowd density updates at any bus stop:")
+    st.title("📊 Dynamic Crowd & Weather Control")
+    
+    st.subheader("🌤️ Weather Condition Simulation")
+    st.session_state.weather = st.selectbox(
+        "Select Weather Condition:",
+        ["Clear Sky", "Light Rain", "Heavy Rain", "Dense Fog"]
+    )
+    if st.session_state.weather in ["Heavy Rain", "Dense Fog"]:
+        st.info("🌧️ **Weather Impact Active:** Road travel times increased by 50%.")
+        
+    st.markdown("---")
+    st.subheader("👥 Student Crowd Density Controls")
     
     c1, c2 = st.columns(2)
     stops_list = list(bus_stops.keys())
@@ -206,7 +231,7 @@ elif selected_page == "Bus Timetable & Schedule":
 elif selected_page == "LIVE DEMO & GPS Tracker":
     st.title("⚡ Live Navigation & GPS Simulation Detector")
     
-    emergency_mode = st.toggle("🚨 Emergency / Medical Vehicle Override Mode (Ignore Crowd Weight)")
+    emergency_mode = st.toggle("🚨 Emergency / Medical Vehicle Override Mode")
     
     col_input, col_display = st.columns([1, 2])
     
@@ -221,7 +246,6 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
         if start_stop == end_stop:
             st.warning("⚠️ Select different Origin & Destination stops!")
         else:
-            # Emergency Mode uses pure distance weight
             selected_weight = 'distance' if emergency_mode else 'weight'
             path = nx.dijkstra_path(G, source=start_stop, target=end_stop, weight=selected_weight)
             total_dist = sum(G[path[i]][path[i+1]]['distance'] for i in range(len(path)-1))
@@ -288,36 +312,23 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
 # ==========================================
 elif selected_page == "🌱 Eco & Efficiency Analytics":
     st.title("🌱 Environmental Impact & Transit Efficiency")
-    st.caption("Quantifying carbon reduction and operational optimization metrics")
     
     col1, col2, col3 = st.columns(3)
     col1.metric("CO₂ Savings / Month", "142 kg", "+18%")
     col2.metric("Fuel Optimization", "18.4%", "+4.2%")
     col3.metric("Passenger Coverage", "94.2%", "+22%")
-    
-    st.markdown("---")
-    st.subheader("📊 Comparative Fuel Consumption (Traditional vs AI Routing)")
-    
-    metrics_df = pd.DataFrame({
-        "System Type": ["Traditional Fixed Route", "Dynamic AI Optimized Route"],
-        "Avg Fuel Spent (L/day)": [45.0, 36.7],
-        "Avg Passenger Wait Time (mins)": [18.5, 8.2]
-    })
-    
-    st.table(metrics_df)
 
 # ==========================================
 # PAGE 9: CAMPUS AI TRANSIT ASSISTANT
 # ==========================================
 elif selected_page == "🤖 Campus AI Transit Assistant":
     st.title("🤖 Campus AI Transit Query Assistant")
-    st.caption("Ask quick operational questions about campus shuttle routing:")
     
     user_query = st.selectbox(
         "Select a question for the AI Assistant:",
         [
             "Which bus stop has the highest student congestion right now?",
-            "How does the dynamic cost formula prioritize crowd density?",
+            "How does weather impact travel time?",
             "What happens if there is a medical emergency?",
             "Why is Dijkstra's algorithm preferred over BFS?"
         ]
@@ -327,11 +338,47 @@ elif selected_page == "🤖 Campus AI Transit Assistant":
         st.markdown("---")
         if "highest student congestion" in user_query:
             max_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
-            max_val = st.session_state.stop_densities[max_stop]
-            st.info(f"🤖 **AI Answer:** Currently, **{max_stop}** has the highest crowding with **{max_val} waiting students**.")
-        elif "dynamic cost formula" in user_query:
-            st.info("🤖 **AI Answer:** The cost formula subtracts density ($w_3 \\cdot Density$). Because Dijkstra seeks the minimum cost path, subtracting density creates a discount that diverts buses toward crowded stops!")
+            st.info(f"🤖 **AI Answer:** Currently, **{max_stop}** has the highest crowding.")
+        elif "weather impact" in user_query:
+            st.info("🤖 **AI Answer:** Heavy Rain or Fog adds a 1.5x multiplier to travel time for safety.")
         elif "medical emergency" in user_query:
-            st.info("🤖 **AI Answer:** You can activate the **Emergency Override Toggle** on the GPS Tracker page. This switches the edge weights purely to shortest distance, ignoring crowd discounts.")
+            st.info("🤖 **AI Answer:** Enable Emergency Mode to recalculate routes purely on physical shortest distance.")
         elif "BFS" in user_query:
-            st.info("🤖 **AI Answer:** BFS only works on unweighted graphs (where all roads have equal weight 1). Campus roads have different distances, travel times, and crowd levels, requiring a weighted graph search algorithm like Dijkstra!")
+            st.info("🤖 **AI Answer:** BFS only works on unweighted graphs. Dijkstra is needed for weighted distance, time, and crowd factors.")
+
+# ==========================================
+# PAGE 10: QR DIGITAL BUS PASS
+# ==========================================
+elif selected_page == "🎟️ QR Digital Bus Pass":
+    st.title("🎟️ Digital Campus Shuttle Pass Generator")
+    st.caption("Generate a downloadable QR boarding pass for campus shuttles")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        student_name = st.text_input("Student Name:", "John Doe")
+        roll_no = st.text_input("Roll Number / ID:", "23331A1201")
+        pass_from = st.selectbox("From Stop:", list(bus_stops.keys()), index=0)
+        pass_to = st.selectbox("To Stop:", list(bus_stops.keys()), index=4)
+        
+    with c2:
+        if st.button("🎫 Generate Boarding Pass"):
+            ticket_info = f"NAME: {student_name}\nROLL NO: {roll_no}\nFROM: {pass_from}\nTO: {pass_to}\nSTATUS: VALIDATED"
+            
+            # Generate QR Code
+            qr = qrcode.QRCode(version=1, box_size=6, border=2)
+            qr.add_data(ticket_info)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            buf = BytesIO()
+            img.save(buf)
+            byte_im = buf.getvalue()
+            
+            st.success("✅ **Digital Pass Generated Successfully!**")
+            st.image(byte_im, width=180, caption="Scan at Bus Gate")
+            st.download_button(
+                label="📥 Download QR Ticket",
+                data=byte_im,
+                file_name=f"Campus_Pass_{roll_no}.png",
+                mime="image/png"
+            )
