@@ -1,4 +1,3 @@
-
 import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -24,7 +23,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. SIDEBAR NAVIGATION & TIMETABLE
+# 2. SIDEBAR NAVIGATION
 # ==========================================
 st.sidebar.title("🎓 Project Navigation")
 st.sidebar.caption("JNTUK R23 B.Tech AI & DS")
@@ -124,11 +123,51 @@ if selected_page == "Home":
 # PAGE 2: SUBJECTS USED
 # ==========================================
 elif selected_page == "Subjects used in project":
-    st.title("📚 Academic Subjects")
-    st.subheader("1. Graph Theory")
-    st.write("Campus network represented as undirected weighted graphs $G = (V, E)$.")
-    st.subheader("2. Design & Analysis of Algorithms")
-    st.write("Shortest route evaluation using Dijkstra's algorithm.")
+    st.title("📚 Academic Subjects & Theoretical Foundations")
+    st.caption("Interdisciplinary Application of JNTUK R23 B.Tech AI & DS Curriculum")
+    
+    st.subheader("1. Graph Theory & Discrete Mathematics")
+    st.write(
+        """
+        The foundational layer of the Campus Bus Route Optimizer relies on **Graph Theory**. 
+        A university campus is modeled as a connected, non-directed, weighted graph $G = (V, E)$, 
+        where the vertex set $V$ represents physical bus stops ($|V| = 12$) and the edge set $E$ represents road links ($|E| = 15$). 
+        
+        Unlike standard graphs with static scalar weights, our graph assigns dynamic vector properties to both vertices and edges. 
+        Each node $v \\in V$ encapsulates geographical spatial coordinates $(\\text{Lat}, \\text{Lon})$ and real-time student queue densities ($D_v$). 
+        Each edge $e = (u, v) \\in E$ captures physical length ($d_{uv}$) and average vehicle travel duration ($t_{uv}$). 
+        This structural abstraction enables the conversion of complex physical campus transit problems into computable matrix representations.
+        """
+    )
+    
+    st.markdown("---")
+    
+    st.subheader("2. Design & Analysis of Algorithms (DAA)")
+    st.write(
+        """
+        Routing efficiency is governed by algorithmic pathfinding. We implement **Dijkstra’s Algorithm** using a **Priority Queue (Min-Heap)** 
+        data structure to solve the single-source shortest path problem on dynamically weighted edges. 
+        
+        By maintaining a tentative distance array and iteratively relaxing adjacent edges, the algorithm guarantees global optimality 
+        with a worst-case time complexity of $\\mathcal{O}((|E| + |V|) \\log |V|)$. 
+        Because the total graph size is relatively lightweight, execution completes in sub-milliseconds, allowing the engine to 
+        re-evaluate path options dynamically whenever live crowd inputs or traffic parameters shift.
+        """
+    )
+    
+    st.markdown("---")
+    
+    st.subheader("3. Database Systems & Data Structures")
+    st.write(
+        """
+        The graph network is internally represented using an **Adjacency List** implemented via nested hash maps (Python Dictionaries). 
+        This approach offers optimal spatial complexity of $\\mathcal{O}(|V| + |E|)$, making it significantly more memory-efficient 
+        than a sparse $12 \\times 12$ Adjacency Matrix. 
+        
+        Data integrity and state persistence across page renders are managed using in-memory state containers (`st.session_state`), 
+        simulating a real-time reactive transactional layer for live parameter updates.
+        """
+    )
 
 # ==========================================
 # PAGE 3: PROGRAMMING USED
@@ -141,8 +180,57 @@ elif selected_page == "Programming used":
 # PAGE 4: AI/ML LAYER
 # ==========================================
 elif selected_page == "AI/ML layer":
-    st.title("🤖 Optimization Engine")
-    st.latex(r"Cost(u, v) = w_1 \cdot Distance + w_2 \cdot Time - w_3 \cdot Density")
+    st.title("🤖 Optimization Engine & AI Heuristic Layer")
+    st.caption("Crowd-Aware Dynamic Cost Calculation Mechanics")
+    
+    st.subheader("1. The Dynamic Objective Cost Function")
+    st.write(
+        """
+        In traditional navigation systems (like standard GPS), road weights are static values derived solely from physical distance ($d_{uv}$). 
+        However, in a smart campus transit ecosystem, prioritizing shorter distance alone leads to massive delays at heavily overcrowded stops. 
+        
+        To solve this, our system introduces a **Multi-Objective Composite Cost Function**:
+        """
+    )
+    
+    st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot t_{uv} - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
+    
+    st.write(
+        """
+        * **$d_{uv}$ (Distance Factor):** Physical road distance between stop $u$ and stop $v$ in kilometers.
+        * **$t_{uv}$ (Time Factor):** Estimated base travel time in minutes.
+        * **$D_u, D_v$ (Density Factors):** Real-time student crowd counts waiting at stops $u$ and $v$.
+        * **$w_1, w_2, w_3$ (Hyperparameters):** Tunable weight coefficients balancing distance penalty ($w_1 = 1.0$), time penalty ($w_2 = 0.5$), and student density discount ($w_3 = 0.01$).
+        * **$\\max(\\dots, 0.1)$ Boundary Constraint:** Prevents edge weights from dropping below zero or becoming negative, preserving Dijkstra's algorithmic correctness and preventing infinite loop relaxation bugs.
+        """
+    )
+    
+    st.markdown("---")
+    
+    st.subheader("2. Heuristic Search & Adaptive Decision Making")
+    st.write(
+        """
+        The core intelligence lies in the **subtraction of average density** in the cost formula. 
+        In graph optimization, algorithms naturally seek paths with the lowest total edge weights. 
+        By applying a mathematical discount ($w_3 \\cdot \\text{Density}$) to edges connected to crowded hubs, 
+        we artificially reduce the edge cost of routes serving high student queues.
+        
+        This forces Dijkstra's search algorithm to dynamically divert shuttle buses toward high-demand passenger clusters, 
+        effectively operating as a rule-based AI heuristic search engine that balances operational transit costs with maximum passenger coverage.
+        """
+    )
+    
+    st.markdown("---")
+    
+    st.subheader("3. Future Extension: Predictive ML Pipeline")
+    st.write(
+        """
+        In a full-scale smart city production system, the static density inputs would be replaced by an automated **Time-Series ML Pipeline** 
+        (such as XGBoost or LSTM Neural Networks). 
+        By ingesting historical class timetables, weather data, and past station queue trends, the model would forecast student crowd spikes 
+        15-30 minutes in advance, allowing the optimizer to dispatch buses proactively before queues accumulate.
+        """
+    )
 
 # ==========================================
 # PAGE 5: ANALYTICS & DYNAMIC CROWD CONTROL
@@ -264,4 +352,3 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
         )
         
         st.success(f"🎯 **Arrival Alert:** Bus Arrived at `{end_stop}` Successfully!")
-
