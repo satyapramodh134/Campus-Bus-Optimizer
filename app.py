@@ -138,7 +138,7 @@ if selected_page == "Home":
         st.info("**Institution:** JNTUK R23\n\n**Subjects:** Linear Algebra, Differential Equations, Programming\n\n**Algorithm:** Dynamic Matrix Dijkstra")
 
 # ==========================================
-# PAGE 2: SUBJECTS USED (LINEAR ALGEBRA, DIFFERENTIAL EQ, PROGRAMMING)
+# PAGE 2: SUBJECTS USED
 # ==========================================
 elif selected_page == "Subjects used in project":
     st.title("📚 Academic Subjects & Mathematical Foundations")
@@ -150,17 +150,17 @@ elif selected_page == "Subjects used in project":
         The structural framework of the campus transportation network relies on **Linear Algebra**:
         
         * **Adjacency Matrix ($A \in \mathbb{R}^{12 \times 12}$):** The physical network of 12 campus stops is encoded into a $12 \times 12$ square matrix. An entry $A_{ij} > 0$ denotes a direct road link between stop $i$ and stop $j$, holding the vector weight parameters.
-        * **Vectorized Cost Computation:** Instead of slow iterative loops, distance vectors $\mathbf{d}$, travel time vectors $\mathbf{t}$, and student density vectors $\mathbf{D}$ are combined using matrix transformation techniques:
+        * **Vectorized Cost Computation:** Distance vectors $\mathbf{d}$, travel time vectors $\mathbf{t}$, and student density vectors $\mathbf{D}$ are combined using matrix transformations:
         """
     )
     st.latex(r"\mathbf{W} = w_1 \mathbf{A}_d + w_2 (\mathbf{A}_t \cdot M_{\text{weather}}) - w_3 \mathbf{A}_{\text{density}}")
     
-    # Live Interactive Matrix View
+    # Live Matrix Table Display (FIXED)
     st.markdown("#### 🔢 Live $12 \\times 12$ Adjacency Matrix View (Linear Algebra Layer):")
     nodes_list = list(bus_stops.keys())
     adj_matrix = nx.to_numpy_array(G, nodelist=nodes_list, weight='distance')
     matrix_df = pd.DataFrame(adj_matrix, index=nodes_list, columns=nodes_list)
-    st.dataframe(matrix_df.style.highlight_nonzero(color='#e6f2ff'))
+    st.dataframe(matrix_df)
 
     st.markdown("---")
     
@@ -189,7 +189,7 @@ elif selected_page == "Subjects used in project":
         """
         Programming acts as the bridge that translates mathematical equations into a real-time running application:
         
-        * **Numerical Execution Engine:** Solves the matrix transformations and differential equations in Python using high-performance vector libraries like **NumPy** and **NetworkX**.
+        * **Numerical Execution Engine:** Solves matrix transformations and differential equations in Python using high-performance vector libraries like **NumPy** and **NetworkX**.
         * **Interactive Graphical Interface:** Uses **Streamlit** to visualize matrix states, render dynamic route graphs using **Matplotlib**, and update live coordinates.
         """
     )
@@ -204,7 +204,7 @@ elif selected_page == "Programming used":
     st.write("Executes matrix transformations, numerical solvers, and routing logic with high performance.")
     
     st.markdown("### 2. NumPy (`numpy`) — Linear Algebra Operations")
-    st.write("Handles multi-dimensional array operations, adjacency matrix constructions, and vectorized dot-product calculations.")
+    st.write("Handles multi-dimensional array operations, adjacency matrix constructions, and vectorized calculations.")
     
     st.markdown("### 3. NetworkX (`networkx`) — Graph Theory Engine")
     st.write("Provides heap-optimized implementation of Dijkstra's algorithm running over matrix weights.")
