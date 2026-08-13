@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
-import qrcode
-from io import BytesIO
 
 # ==========================================
 # 1. PAGE CONFIGURATION & STYLING
@@ -38,12 +36,9 @@ selected_page = st.sidebar.radio(
         "Subjects used in project",
         "Programming used",
         "AI/ML layer",
-        "Analytics & Crowd Control",
         "Bus Timetable & Schedule",
         "LIVE DEMO & GPS Tracker",
-        "🌱 Eco & Efficiency Analytics",
-        "🤖 Campus AI Transit Assistant",
-        "🎟️ QR Digital Bus Pass"
+        "🤖 Campus AI Transit Assistant"
     ]
 )
 
@@ -84,15 +79,9 @@ road_network = [
     ("Admin Building", "Hostel Block A", 1.4, 4)
 ]
 
-# Session State Initializations
+# Session State Initialization
 if "stop_densities" not in st.session_state:
     st.session_state.stop_densities = {stop: info["density"] for stop, info in bus_stops.items()}
-
-if "weather" not in st.session_state:
-    st.session_state.weather = "Clear Sky"
-
-# Weather multiplier logic
-weather_multiplier = 1.5 if st.session_state.weather in ["Heavy Rain", "Dense Fog"] else 1.0
 
 # Construct Graph
 G = nx.Graph()
@@ -105,9 +94,8 @@ for u, v, dist, time_min in road_network:
     d_u = st.session_state.stop_densities.get(u, bus_stops[u]["density"])
     d_v = st.session_state.stop_densities.get(v, bus_stops[v]["density"])
     avg_density = (d_u + d_v) / 2.0
-    adjusted_time = time_min * weather_multiplier
-    cost = max((w1 * dist) + (w2 * adjusted_time) - (w3 * avg_density), 0.1)
-    G.add_edge(u, v, distance=dist, time=adjusted_time, weight=cost)
+    cost = max((w1 * dist) + (w2 * time_min) - (w3 * avg_density), 0.1)
+    G.add_edge(u, v, distance=dist, time=time_min, weight=cost)
 
 # ==========================================
 # ANNOUNCEMENT BANNER
@@ -127,18 +115,17 @@ if selected_page == "Home":
         st.write("Project 7 calculates optimal campus bus paths using **Linear Algebra Matrix Operations**, **Differential Equations for Traffic Rates**, and **Programming Algorithms**.")
         st.markdown("---")
         st.subheader("📊 Key Operational Metrics")
-        k1, k2, k3, k4 = st.columns(4)
+        k1, k2, k3 = st.columns(3)
         k1.metric("Campus Stops", "12 Active")
         k2.metric("Road Links", "15 Routes")
         max_density_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
         k3.metric("Peak Stop", max_density_stop)
-        k4.metric("Weather State", st.session_state.weather)
     with col2:
         st.subheader("📋 Academic Details")
         st.info("**Institution:** JNTUK R23\n\n**Subjects:** Linear Algebra, Differential Equations, Programming\n\n**Algorithm:** Dynamic Matrix Dijkstra")
 
 # ==========================================
-# PAGE 2: SUBJECTS USED
+# PAGE 2: SUBJECTS USED IN PROJECT
 # ==========================================
 elif selected_page == "Subjects used in project":
     st.title("📚 Academic Subjects & Mathematical Foundations")
@@ -153,9 +140,9 @@ elif selected_page == "Subjects used in project":
         * **Vectorized Cost Computation:** Distance vectors $\mathbf{d}$, travel time vectors $\mathbf{t}$, and student density vectors $\mathbf{D}$ are combined using matrix transformations:
         """
     )
-    st.latex(r"\mathbf{W} = w_1 \mathbf{A}_d + w_2 (\mathbf{A}_t \cdot M_{\text{weather}}) - w_3 \mathbf{A}_{\text{density}}")
+    st.latex(r"\mathbf{W} = w_1 \mathbf{A}_d + w_2 \mathbf{A}_t - w_3 \mathbf{A}_{\text{density}}")
     
-    # Live Matrix Table Display (FIXED)
+    # Live Matrix Table Display
     st.markdown("#### 🔢 Live $12 \\times 12$ Adjacency Matrix View (Linear Algebra Layer):")
     nodes_list = list(bus_stops.keys())
     adj_matrix = nx.to_numpy_array(G, nodelist=nodes_list, weight='distance')
@@ -217,47 +204,11 @@ elif selected_page == "Programming used":
 # ==========================================
 elif selected_page == "AI/ML layer":
     st.title("🤖 Optimization Engine & Heuristic AI Layer")
-    st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot (t_{uv} \cdot M_{\text{weather}}) - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
+    st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot t_{uv} - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
+    st.info("The AI layer balances path lengths with student density weighting using composite cost formulas.")
 
 # ==========================================
-# PAGE 5: ANALYTICS & DYNAMIC CROWD CONTROL
-# ==========================================
-elif selected_page == "Analytics & Crowd Control":
-    st.title("📊 Dynamic Crowd & Weather Control")
-    
-    st.subheader("🌤️ Weather Condition Simulation")
-    st.session_state.weather = st.selectbox(
-        "Select Weather Condition:",
-        ["Clear Sky", "Light Rain", "Heavy Rain", "Dense Fog"]
-    )
-    if st.session_state.weather in ["Heavy Rain", "Dense Fog"]:
-        st.info("🌧️ **Weather Impact Active:** Road travel times increased by 50%.")
-        
-    st.markdown("---")
-    st.subheader("👥 Student Crowd Density Controls")
-    
-    c1, c2 = st.columns(2)
-    stops_list = list(bus_stops.keys())
-    
-    with c1:
-        for stop in stops_list[:6]:
-            st.session_state.stop_densities[stop] = st.slider(
-                f"👥 {stop}:", 0, 300, st.session_state.stop_densities[stop]
-            )
-            
-    with c2:
-        for stop in stops_list[6:]:
-            st.session_state.stop_densities[stop] = st.slider(
-                f"👥 {stop}:", 0, 300, st.session_state.stop_densities[stop]
-            )
-            
-    st.markdown("---")
-    st.subheader("📈 Live Density Distribution")
-    df = pd.DataFrame([{"Stop": k, "Students Waiting": v} for k, v in st.session_state.stop_densities.items()])
-    st.bar_chart(df.set_index("Stop"))
-
-# ==========================================
-# PAGE 6: BUS TIMETABLE & SCHEDULE
+# PAGE 5: BUS TIMETABLE & SCHEDULE
 # ==========================================
 elif selected_page == "Bus Timetable & Schedule":
     st.title("⏱️ Campus Bus Schedule & Timetable")
@@ -271,7 +222,7 @@ elif selected_page == "Bus Timetable & Schedule":
     st.table(pd.DataFrame(timetable_data))
 
 # ==========================================
-# PAGE 7: LIVE DEMO & GPS TRACKER
+# PAGE 6: LIVE DEMO & GPS TRACKER
 # ==========================================
 elif selected_page == "LIVE DEMO & GPS Tracker":
     st.title("⚡ Live Navigation & GPS Simulation Detector")
@@ -353,18 +304,7 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
         st.success(f"🎯 **Arrival Alert:** Bus Arrived at `{end_stop}` Successfully!")
 
 # ==========================================
-# PAGE 8: ECO & EFFICIENCY ANALYTICS
-# ==========================================
-elif selected_page == "🌱 Eco & Efficiency Analytics":
-    st.title("🌱 Environmental Impact & Transit Efficiency")
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("CO₂ Savings / Month", "142 kg", "+18%")
-    col2.metric("Fuel Optimization", "18.4%", "+4.2%")
-    col3.metric("Passenger Coverage", "94.2%", "+22%")
-
-# ==========================================
-# PAGE 9: CAMPUS AI TRANSIT ASSISTANT
+# PAGE 7: CAMPUS AI TRANSIT ASSISTANT
 # ==========================================
 elif selected_page == "🤖 Campus AI Transit Assistant":
     st.title("🤖 Campus AI Transit Query Assistant")
@@ -373,7 +313,6 @@ elif selected_page == "🤖 Campus AI Transit Assistant":
         "Select a question for the AI Assistant:",
         [
             "Which bus stop has the highest student congestion right now?",
-            "How does weather impact travel time?",
             "What happens if there is a medical emergency?",
             "Why is Dijkstra's algorithm preferred over BFS?"
         ]
@@ -384,46 +323,7 @@ elif selected_page == "🤖 Campus AI Transit Assistant":
         if "highest student congestion" in user_query:
             max_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
             st.info(f"🤖 **AI Answer:** Currently, **{max_stop}** has the highest crowding.")
-        elif "weather impact" in user_query:
-            st.info("🤖 **AI Answer:** Heavy Rain or Fog adds a 1.5x multiplier to travel time for safety.")
         elif "medical emergency" in user_query:
-            st.info("🤖 **AI Answer:** Enable Emergency Mode to recalculate routes purely on physical shortest distance.")
+            st.info("🤖 **AI Answer:** Enable Emergency Mode in LIVE DEMO to recalculate routes purely on physical shortest distance.")
         elif "BFS" in user_query:
-            st.info("🤖 **AI Answer:** BFS only works on unweighted graphs. Dijkstra is needed for weighted distance, time, and crowd factors.")
-
-# ==========================================
-# PAGE 10: QR DIGITAL BUS PASS
-# ==========================================
-elif selected_page == "🎟️ QR Digital Bus Pass":
-    st.title("🎟️ Digital Campus Shuttle Pass Generator")
-    st.caption("Generate a downloadable QR boarding pass for campus shuttles")
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        student_name = st.text_input("Student Name:", "John Doe")
-        roll_no = st.text_input("Roll Number / ID:", "23331A1201")
-        pass_from = st.selectbox("From Stop:", list(bus_stops.keys()), index=0)
-        pass_to = st.selectbox("To Stop:", list(bus_stops.keys()), index=4)
-        
-    with c2:
-        if st.button("🎫 Generate Boarding Pass"):
-            ticket_info = f"NAME: {student_name}\nROLL NO: {roll_no}\nFROM: {pass_from}\nTO: {pass_to}\nSTATUS: VALIDATED"
-            
-            # Generate QR Code
-            qr = qrcode.QRCode(version=1, box_size=6, border=2)
-            qr.add_data(ticket_info)
-            qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white")
-            
-            buf = BytesIO()
-            img.save(buf)
-            byte_im = buf.getvalue()
-            
-            st.success("✅ **Digital Pass Generated Successfully!**")
-            st.image(byte_im, width=180, caption="Scan at Bus Gate")
-            st.download_button(
-                label="📥 Download QR Ticket",
-                data=byte_im,
-                file_name=f"Campus_Pass_{roll_no}.png",
-                mime="image/png"
-            )
+            st.info("🤖 **AI Answer:** BFS only works on unweighted graphs. Dijkstra is needed for weighted distance and time factors.")
