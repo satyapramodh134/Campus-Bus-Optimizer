@@ -304,26 +304,67 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
         st.success(f"🎯 **Arrival Alert:** Bus Arrived at `{end_stop}` Successfully!")
 
 # ==========================================
-# PAGE 7: CAMPUS AI TRANSIT ASSISTANT
+# PAGE 7: CAMPUS AI TRANSIT ASSISTANT (INTERACTIVE & VOICE RESPONSIVE)
 # ==========================================
 elif selected_page == "🤖 Campus AI Transit Assistant":
-    st.title("🤖 Campus AI Transit Query Assistant")
+    st.title("🤖 Interactive Campus AI Voice Assistant")
+    st.caption("Ask any question regarding bus routing, algorithms, or project math models!")
     
-    user_query = st.selectbox(
-        "Select a question for the AI Assistant:",
-        [
-            "Which bus stop has the highest student congestion right now?",
-            "What happens if there is a medical emergency?",
-            "Why is Dijkstra's algorithm preferred over BFS?"
-        ]
+    # Suggested Questions Bar
+    st.write("💡 **Quick Prompt Ideas:**")
+    prompt_cols = st.columns(3)
+    p1 = prompt_cols[0].button("👥 Which stop has highest crowd?")
+    p2 = prompt_cols[1].button("📐 How is Linear Algebra used?")
+    p3 = prompt_cols[2].button("🚨 How does Emergency Mode work?")
+
+    # Free text input field
+    user_query = st.text_input(
+        "💬 Type your question here:",
+        placeholder="e.g., Explain Dijkstra algorithm or How does traffic rate work?"
     )
     
-    if st.button("💬 Ask AI Assistant"):
+    if p1:
+        user_query = "Which stop has highest crowd?"
+    elif p2:
+        user_query = "How is Linear Algebra used?"
+    elif p3:
+        user_query = "How does Emergency Mode work?"
+
+    ask_clicked = st.button("🚀 Ask AI Assistant")
+
+    if (ask_clicked or p1 or p2 or p3) and user_query:
+        query_lower = user_query.lower()
+        max_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
+        
+        # Intelligent Response Engine Logic
+        if "crowd" in query_lower or "congestion" in query_lower or "highest" in query_lower:
+            response = f"Currently, the bus stop with the highest student crowding is {max_stop}."
+        elif "linear algebra" in query_lower or "matrix" in query_lower:
+            response = "We use Linear Algebra by representing the 12 campus stops as a 12 by 12 Adjacency Matrix to compute network connections using vectorized operations."
+        elif "emergency" in query_lower or "medical" in query_lower:
+            response = "In Emergency Mode, the system overrides student crowd discounts and forces Dijkstra's algorithm to calculate the route purely on physical shortest distance."
+        elif "dijkstra" in query_lower or "algorithm" in query_lower:
+            response = "Dijkstra's algorithm finds the shortest path between nodes in a weighted graph. We customize edge weights using distance, travel time, and crowd factors."
+        elif "differential" in query_lower or "rate" in query_lower or "math" in query_lower:
+            response = "Differential equations model the rate of change of student crowding at each stop as inflow rate minus outflow rate over time."
+        else:
+            response = f"I am your Campus AI Transit Assistant. Regarding '{user_query}', our system optimizes bus routes in real time using Linear Algebra and Dijkstra's algorithm."
+
+        # Display AI Text Response
         st.markdown("---")
-        if "highest student congestion" in user_query:
-            max_stop = max(st.session_state.stop_densities, key=st.session_state.stop_densities.get)
-            st.info(f"🤖 **AI Answer:** Currently, **{max_stop}** has the highest crowding.")
-        elif "medical emergency" in user_query:
-            st.info("🤖 **AI Answer:** Enable Emergency Mode in LIVE DEMO to recalculate routes purely on physical shortest distance.")
-        elif "BFS" in user_query:
-            st.info("🤖 **AI Answer:** BFS only works on unweighted graphs. Dijkstra is needed for weighted distance and time factors.")
+        st.subheader("🤖 AI Response:")
+        st.info(response)
+
+        # JavaScript Browser TTS Engine (Voice Output)
+        clean_text = response.replace("'", "\\'")
+        tts_script = f"""
+            <script>
+                var msg = new SpeechSynthesisUtterance('{clean_text}');
+                msg.rate = 0.95;
+                msg.pitch = 1.0;
+                window.speechSynthesis.cancel(); // Stop prior audio
+                window.speechSynthesis.speak(msg);
+            </script>
+        """
+        st.components.v1.html(tts_script, height=0)
+        st.success("🔊 **AI Voice Playing...** (Make sure your device sound is turned ON!)")
