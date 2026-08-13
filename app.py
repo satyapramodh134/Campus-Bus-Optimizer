@@ -2,6 +2,7 @@ import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import time
 import qrcode
 from io import BytesIO
@@ -50,8 +51,8 @@ st.sidebar.markdown("---")
 st.sidebar.info(
     "💡 **Project 7: Campus Bus Route Optimizer**\n\n"
     "**Batch:** 2025-2029 (B.Tech First Year)\n"
-    "**Domain:** AI & Graph Theory\n"
-    "**Status:** Live GPS Tracker Active"
+    "**Domain:** Linear Algebra & Differential Equations\n"
+    "**Status:** Live Mathematical Engine Active"
 )
 
 # ==========================================
@@ -111,19 +112,19 @@ for u, v, dist, time_min in road_network:
 # ==========================================
 # ANNOUNCEMENT BANNER
 # ==========================================
-st.warning("📢 **Campus Notice:** Real-time dynamic optimization active. Weather & crowd parameters auto-updated.")
+st.warning("📢 **Campus Notice:** Real-time dynamic optimization active. Differential Equations & Matrix models running.")
 
 # ==========================================
 # PAGE 1: HOME
 # ==========================================
 if selected_page == "Home":
     st.title("🚌 Campus Bus Route Optimizer & Live GPS Tracking")
-    st.caption("JNTUK R23 Curriculum — B.Tech Artificial Intelligence & Data Science")
+    st.caption("JNTUK R23 Curriculum — Applied Mathematics & Computer Science")
     
     col1, col2 = st.columns([2, 1])
     with col1:
         st.subheader("📌 Project Overview")
-        st.write("Project 7 calculates optimal campus bus paths considering **distance**, **travel time**, **weather delay**, and **student density** using **Dijkstra's Algorithm**.")
+        st.write("Project 7 calculates optimal campus bus paths using **Linear Algebra Matrix Operations**, **Differential Equations for Traffic Rates**, and **Programming Algorithms**.")
         st.markdown("---")
         st.subheader("📊 Key Operational Metrics")
         k1, k2, k3, k4 = st.columns(4)
@@ -134,170 +135,89 @@ if selected_page == "Home":
         k4.metric("Weather State", st.session_state.weather)
     with col2:
         st.subheader("📋 Academic Details")
-        st.info("**Institution:** JNTUK R23\n\n**Branch:** AI & DS\n\n**Algorithm:** Dynamic Dijkstra's Engine")
+        st.info("**Institution:** JNTUK R23\n\n**Subjects:** Linear Algebra, Differential Equations, Programming\n\n**Algorithm:** Dynamic Matrix Dijkstra")
 
 # ==========================================
-# PAGE 2: SUBJECTS USED (EXPANDED HIGH DEPTH CONTENT)
+# PAGE 2: SUBJECTS USED (LINEAR ALGEBRA, DIFFERENTIAL EQ, PROGRAMMING)
 # ==========================================
 elif selected_page == "Subjects used in project":
-    st.title("📚 Academic Subjects & Theoretical Foundations")
-    st.caption("Comprehensive Interdisciplinary Mapping of JNTUK R23 B.Tech AI & DS Curriculum")
+    st.title("📚 Academic Subjects & Mathematical Foundations")
+    st.caption("Interdisciplinary Application of JNTUK R23 Mathematics & Computer Science")
     
-    st.markdown("### 1. Discrete Mathematics & Graph Theory")
+    st.markdown("### 1. 📐 Linear Algebra (Network Matrix Representation)")
     st.write(
         """
-        The backbone of the entire Campus Bus Route Optimizer is built upon **Graph Theory**. 
-        In our model, the physical university campus infrastructure is mapped into an undirected, dynamically weighted mathematical graph $G = (V, E)$.
+        The structural framework of the campus transportation network relies on **Linear Algebra**:
         
-        * **Vertex Set ($V$):** Represents $12$ key physical bus stops across campus (e.g., Main Gate, Library, Engineering Block, Hostels). Each vertex holds real-time state attributes like student crowd queues ($D_v$) and spatial GPS coordinates $(\\text{Latitude}, \\text{Longitude})$.
-        * **Edge Set ($E$):** Represents $15$ physical road links connecting adjacent bus stops. Unlike basic textbook graphs with static scalar edge lengths, our edges feature dynamic weight vectors combining physical distance ($d_{uv}$), expected vehicular travel time ($t_{uv}$), and environmental weather friction multipliers.
-        * **Mathematical Representation:** This graph abstraction allows complex real-world transportation logistics to be mathematically encoded into computable memory matrices and dictionaries.
+        * **Adjacency Matrix ($A \in \mathbb{R}^{12 \times 12}$):** The physical network of 12 campus stops is encoded into a $12 \times 12$ square matrix. An entry $A_{ij} > 0$ denotes a direct road link between stop $i$ and stop $j$, holding the vector weight parameters.
+        * **Vectorized Cost Computation:** Instead of slow iterative loops, distance vectors $\mathbf{d}$, travel time vectors $\mathbf{t}$, and student density vectors $\mathbf{D}$ are combined using matrix transformation techniques:
         """
     )
+    st.latex(r"\mathbf{W} = w_1 \mathbf{A}_d + w_2 (\mathbf{A}_t \cdot M_{\text{weather}}) - w_3 \mathbf{A}_{\text{density}}")
     
+    # Live Interactive Matrix View
+    st.markdown("#### 🔢 Live $12 \\times 12$ Adjacency Matrix View (Linear Algebra Layer):")
+    nodes_list = list(bus_stops.keys())
+    adj_matrix = nx.to_numpy_array(G, nodelist=nodes_list, weight='distance')
+    matrix_df = pd.DataFrame(adj_matrix, index=nodes_list, columns=nodes_list)
+    st.dataframe(matrix_df.style.highlight_nonzero(color='#e6f2ff'))
+
     st.markdown("---")
     
-    st.markdown("### 2. Design & Analysis of Algorithms (DAA)")
+    st.markdown("### 2. 📉 Differential Equations (Dynamic Crowd Rate Modeling)")
     st.write(
         """
-        Optimal path planning is powered by principles from algorithm design and computational analysis:
-        
-        * **Dijkstra’s Algorithm Engine:** Solves the Single-Source Shortest Path (SSSP) problem. It guarantees globally optimal path selections under non-negative edge weights.
-        * **Min-Heap / Priority Queue Data Structure:** Instead of an unoptimized linear search $\\mathcal{O}(|V|^2)$, the engine utilizes a Min-Heap priority queue to fetch the next closest unvisited node in $\\mathcal{O}(\\log |V|)$ time.
-        * **Asymptotic Time Complexity:** Overall execution operates at $\\mathcal{O}((|E| + |V|) \\log |V|)$. With $|V|=12$ nodes and $|E|=15$ edges, path computation completes in sub-milliseconds (under 0.001s), enabling real-time interactive UI re-computations when user inputs shift.
+        Traffic and student passenger density at stops do not remain static; they change continuously over time. We model crowd dynamics using an **Ordinary Differential Equation (ODE)**:
         """
     )
-    
-    st.markdown("---")
-    
-    st.markdown("### 3. Data Structures & Memory Storage Systems")
+    st.latex(r"\frac{dD_i(t)}{dt} = \lambda_i(t) - \mu_i(t)")
     st.write(
         """
-        Efficient graph storage and state management are achieved through fundamental data structure choices:
+        * **$\frac{dD_i(t)}{dt}$:** Rate of change of student crowd density at stop $i$ with respect to time $t$.
+        * **$\lambda_i(t)$:** Student arrival rate function (Inflow rate from classes finishing).
+        * **$\mu_i(t)$:** Student departure rate function (Outflow rate via bus boarding).
         
-        * **Adjacency List Structure:** Represented internally using nested Python Hash Maps (Dictionaries of Dictionaries). This guarantees an optimal spatial complexity of $\\mathcal{O}((|V| + |E|))$, which avoids the high memory overhead of a $12 \\times 12$ sparse Adjacency Matrix.
-        * **In-Memory Session State Containers:** Managed via Streamlit's `st.session_state` reactive dictionary layer. This ensures dynamic crowd slider adjustments and weather selections persist seamlessly across UI browser refreshes without data loss.
+        Using **Euler's Numerical Method**, the software solves this differential equation iteratively at each time step $\Delta t$:
+        """
+    )
+    st.latex(r"D_i(t + \Delta t) = D_i(t) + \left(\lambda_i(t) - \mu_i(t)\right) \Delta t")
+
+    st.markdown("---")
+    
+    st.markdown("### 3. 💻 Programming (Computational Engine & Solver)")
+    st.write(
+        """
+        Programming acts as the bridge that translates mathematical equations into a real-time running application:
+        
+        * **Numerical Execution Engine:** Solves the matrix transformations and differential equations in Python using high-performance vector libraries like **NumPy** and **NetworkX**.
+        * **Interactive Graphical Interface:** Uses **Streamlit** to visualize matrix states, render dynamic route graphs using **Matplotlib**, and update live coordinates.
         """
     )
 
 # ==========================================
-# PAGE 3: PROGRAMMING USED (EXPANDED HIGH DEPTH CONTENT)
+# PAGE 3: PROGRAMMING USED
 # ==========================================
 elif selected_page == "Programming used":
-    st.title("💻 Technology Stack & Software Architecture")
-    st.caption("Detailed Breakdown of Modern Open-Source Libraries & Frameworks Employed")
+    st.title("💻 Programming Stack & Computational Architecture")
     
-    st.markdown("### 1. Python 3.10+ (Core Runtime Engine)")
-    st.write(
-        """
-        Python was chosen as the primary programming language due to its unmatched ecosystem for Artificial Intelligence, Graph Data Processing, and Web Application rapid prototyping. Python's clean expression handling allows complex dynamic cost equations to execute with minimal overhead.
-        """
-    )
+    st.markdown("### 1. Python 3.10+ (Core Language)")
+    st.write("Executes matrix transformations, numerical solvers, and routing logic with high performance.")
     
-    st.markdown("---")
+    st.markdown("### 2. NumPy (`numpy`) — Linear Algebra Operations")
+    st.write("Handles multi-dimensional array operations, adjacency matrix constructions, and vectorized dot-product calculations.")
     
-    st.markdown("### 2. NetworkX (`networkx`) — Graph Computation Library")
-    st.write(
-        """
-        * **Purpose:** Acts as the mathematical core for graph generation, node/edge attribute storage, and pathfinding.
-        * **Role in Project:** Constructs the dynamic graph $G$, attaches multi-variable attributes (Distance, Time, Density) to edges, and executes `nx.dijkstra_path()` with heap optimization to extract the shortest/most optimal sequence of bus stops.
-        """
-    )
+    st.markdown("### 3. NetworkX (`networkx`) — Graph Theory Engine")
+    st.write("Provides heap-optimized implementation of Dijkstra's algorithm running over matrix weights.")
     
-    st.markdown("---")
-    
-    st.markdown("### 3. Streamlit (`streamlit`) — Interactive Web Application Framework")
-    st.write(
-        """
-        * **Purpose:** Converts pure Python code into a production-grade, reactive, interactive web dashboard without requiring traditional HTML, CSS, or JavaScript web stacks.
-        * **Role in Project:** Renders the sidebar navigation, live telemetry controls, crowd density sliders, progress bars for GPS tracking, and reactive layout grids.
-        """
-    )
-    
-    st.markdown("---")
-    
-    st.markdown("### 4. Matplotlib (`matplotlib`) — Data & Topology Visualization")
-    st.write(
-        """
-        * **Purpose:** Programmatic plotting and graph rendering engine.
-        * **Role in Project:** Draws the 2D spatial campus graph topology using `spring_layout`. It dynamically colors normal road connections in gray and highlights the active calculated bus route in bright **Red / Orange** lines.
-        """
-    )
-    
-    st.markdown("---")
-    
-    st.markdown("### 5. Pandas (`pandas`) — Data Analysis & Tabular Processing")
-    st.write(
-        """
-        * **Purpose:** High-performance data manipulation and DataFrame structuring.
-        * **Role in Project:** Organizes student crowd queue numbers, bus timetables, and environmental efficiency metrics into structured tabular DataFrames displayed cleanly in the UI.
-        """
-    )
-    
-    st.markdown("---")
-    
-    st.markdown("### 6. QRCode (`qrcode`) & BytesIO — Pass Generation Pipeline")
-    st.write(
-        """
-        * **Purpose:** Generates two-dimensional barcode matrices on-the-fly and handles in-memory binary image buffers.
-        * **Role in Project:** Encodes student boarding pass details into a scannable PNG QR code for seamless digital pass validation.
-        """
-    )
+    st.markdown("### 4. Streamlit (`streamlit`) — Interactive Web Framework")
+    st.write("Renders reactive UI components, slider controls, and real-time dashboard elements.")
 
 # ==========================================
-# PAGE 4: AI/ML LAYER (EXPANDED HIGH DEPTH CONTENT)
+# PAGE 4: AI/ML LAYER
 # ==========================================
 elif selected_page == "AI/ML layer":
     st.title("🤖 Optimization Engine & Heuristic AI Layer")
-    st.caption("Deep Mathematical Analysis of Dynamic Crowd-Aware Route Selection Mechanics")
-    
-    st.markdown("### 1. The Multi-Objective Dynamic Composite Cost Function")
-    st.write(
-        """
-        Standard navigation systems (e.g., standard Google Maps) typically calculate route costs purely based on physical distance ($d_{uv}$) or historical road speed limits. In a smart university campus transit system, this naive approach leads to severe bottlenecking — buses bypass massively overcrowded stops simply because another route is 100 meters shorter.
-        
-        To solve this, our system implements a **Multi-Objective Composite Heuristic Cost Function**:
-        """
-    )
-    
     st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot (t_{uv} \cdot M_{\text{weather}}) - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
-    
-    st.write(
-        """
-        #### Formula Parameter Breakdown:
-        * **$d_{uv}$ (Physical Distance):** Length of the road segment between stop $u$ and stop $v$ in kilometers.
-        * **$t_{uv}$ (Base Travel Time):** Normal vehicle transit time in minutes.
-        * **$M_{\text{weather}}$ (Environmental Weather Multiplier):** Safety delay factor ($1.0\\times$ for Clear Sky, $1.5\\times$ for Heavy Rain/Fog).
-        * **$D_u, D_v$ (Real-Time Student Crowd Counts):** Current number of waiting students at origin stop $u$ and target stop $v$.
-        * **$w_1, w_2, w_3$ (Weight Hyperparameters):** Configurable weights balancing Distance Penalty ($w_1 = 1.0$), Travel Time Penalty ($w_2 = 0.5$), and Student Crowd Discount ($w_3 = 0.01$).
-        * **$\max(\dots, 0.1)$ Boundary Condition:** Prevents total edge weight from dropping to zero or negative values, preserving Dijkstra's mathematical contract and preventing infinite loop bugs.
-        """
-    )
-    
-    st.markdown("---")
-    
-    st.markdown("### 2. Heuristic Search & Adaptive AI Decision-Making Logic")
-    st.write(
-        """
-        The intelligence of the algorithm rests on the **subtraction of average student density** in the cost equation.
-        
-        * **Discount Mechanism:** In graph optimization, pathfinding algorithms natively search for routes that minimize total edge cost. By applying a mathematical discount ($- w_3 \\cdot \\text{Density}$) on edges leading to crowded stops, we artificially reduce the edge cost of routes serving high student queues.
-        * **Dynamic Rerouting Behavior:** This forces Dijkstra's search tree to dynamically expand toward high-demand passenger clusters. When crowd numbers spike at the Hostel or Canteen, the algorithm automatically reroutes the shuttle toward those stops, acting as a rule-based AI heuristic decision engine.
-        """
-    )
-    
-    st.markdown("---")
-    
-    st.markdown("### 3. Production Scalability: Predictive Machine Learning Pipeline")
-    st.write(
-        """
-        In a full-scale smart city / smart university enterprise deployment, manual slider inputs are replaced by an automated **Time-Series Machine Learning Predictive Pipeline**:
-        
-        1. **Data Ingestion:** Historical student class timetables, weather forecasts, and IoT camera queue counts are fed into **XGBoost Regressor / LSTM Neural Networks**.
-        2. **Predictive Demand Forecasting:** The ML model predicts crowd surges 15-30 minutes before classes finish.
-        3. **Proactive Dispatching:** The Graph Engine ingests these predicted density inputs and dispatches buses proactively before passenger queues even form.
-        """
-    )
 
 # ==========================================
 # PAGE 5: ANALYTICS & DYNAMIC CROWD CONTROL
