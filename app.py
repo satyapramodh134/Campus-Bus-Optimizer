@@ -182,22 +182,64 @@ elif selected_page == "Subjects used in project":
     )
 
 # ==========================================
-# PAGE 3: PROGRAMMING USED
+# PAGE 3: PROGRAMMING USED (EXPANDED DETAILED VERSION)
 # ==========================================
 elif selected_page == "Programming used":
     st.title("💻 Programming Stack & Computational Architecture")
+    st.caption("Deep-dive into the software engineering libraries and algorithms powering the application")
     
-    st.markdown("### 1. Python 3.10+ (Core Language)")
-    st.write("Executes matrix transformations, numerical solvers, and routing logic with high performance.")
+    st.markdown("### 1. 🐍 Python 3.10+ (Core Programming Language)")
+    st.write(
+        """
+        Python serves as the primary language for building the entire backend architecture due to its extensive support for scientific computing and rapid data structure manipulations.
+        * **Object-Oriented & Modular Structure:** Handles network states, GPS coordinate telemetry, and real-time state persistence cleanly.
+        * **Session State Management:** Retains live updates across user interactions without requiring external database overhead.
+        """
+    )
     
-    st.markdown("### 2. NumPy (`numpy`) — Linear Algebra Operations")
-    st.write("Handles multi-dimensional array operations, adjacency matrix constructions, and vectorized calculations.")
-    
-    st.markdown("### 3. NetworkX (`networkx`) — Graph Theory Engine")
-    st.write("Provides heap-optimized implementation of Dijkstra's algorithm running over matrix weights.")
-    
-    st.markdown("### 4. Streamlit (`streamlit`) — Interactive Web Framework")
-    st.write("Renders reactive UI components, slider controls, and real-time dashboard elements.")
+    st.markdown("---")
+    st.markdown("### 2. 🔢 NumPy (`numpy`) — Linear Algebra & Vector Operations")
+    st.write(
+        """
+        NumPy provides optimized C-backed array operations to execute heavy matrix calculations required by Linear Algebra models.
+        * **Adjacency Matrix Conversion:** Converts graph structures directly into 2D NumPy arrays for fast matrix multiplication and algebraic manipulations.
+        * **Vectorized Cost Computation:** Computes composite weight vectors instantly across all 15 campus road segments simultaneously without using slow iterative loops.
+        """
+    )
+    st.code("import numpy as np\n# Converting network graph to NumPy Adjacency Matrix\nadj_matrix = nx.to_numpy_array(G, nodelist=nodes_list, weight='distance')", language="python")
+
+    st.markdown("---")
+    st.markdown("### 3. 🕸️ NetworkX (`networkx`) — Graph Theory & Shortest Path Engine")
+    st.write(
+        """
+        NetworkX provides node-and-edge graph abstractions alongside highly optimized graph algorithms.
+        * **Dynamic Dijkstra Algorithm:** Uses priority queues (min-heaps) with worst-case complexity $O((E + V) \log V)$ to calculate the mathematical shortest path in milliseconds.
+        * **Custom Edge Weighting:** Dynamically recalculates weights on every node using distance, differential crowd density, and travel time parameters.
+        * **Emergency Override Routing:** Instantly flips weight functions to calculate purely geographical distances during emergency overrides.
+        """
+    )
+    st.code("import networkx as nx\n# Executing Dijkstra's Algorithm with dynamic composite weights\npath = nx.dijkstra_path(G, source=start_stop, target=end_stop, weight='weight')", language="python")
+
+    st.markdown("---")
+    st.markdown("### 4. 📊 Matplotlib (`matplotlib.pyplot`) — Topographic Network Visualization")
+    st.write(
+        """
+        Matplotlib generates real-time 2D spatial layouts of campus bus stops and connectivity edges.
+        * **Spring Layout Geometry:** Renders nodes using force-directed layout algorithms for visual clarity.
+        * **Dynamic Edge Highlighting:** Colors and expands the thickness of chosen optimal paths dynamically based on active route calculations.
+        """
+    )
+
+    st.markdown("---")
+    st.markdown("### 5. 🚀 Streamlit (`streamlit`) — Interactive Web GUI & Real-Time Engine")
+    st.write(
+        """
+        Streamlit turns Python data scripts into interactive web dashboards seamlessly.
+        * **Reactive Component Pipeline:** Automatically updates UI elements whenever user parameters change.
+        * **HTML5 Speech Synthesis Integration:** Embeds native browser JavaScript APIs to provide full AI Voice responses without external server latency.
+        * **Live GPS Telemetry Simulation:** Progress bar animations and live coordinate feeds simulate real-time bus tracking.
+        """
+    )
 
 # ==========================================
 # PAGE 4: AI/ML LAYER
@@ -304,7 +346,7 @@ elif selected_page == "LIVE DEMO & GPS Tracker":
         st.success(f"🎯 **Arrival Alert:** Bus Arrived at `{end_stop}` Successfully!")
 
 # ==========================================
-# PAGE 7: CAMPUS AI TRANSIT ASSISTANT (INTERACTIVE & VOICE RESPONSIVE)
+# PAGE 7: CAMPUS AI TRANSIT ASSISTANT
 # ==========================================
 elif selected_page == "🤖 Campus AI Transit Assistant":
     st.title("🤖 Interactive Campus AI Voice Assistant")
