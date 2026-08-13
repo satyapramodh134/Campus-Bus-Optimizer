@@ -182,7 +182,7 @@ elif selected_page == "Subjects used in project":
     )
 
 # ==========================================
-# PAGE 3: PROGRAMMING USED (EXPANDED DETAILED VERSION)
+# PAGE 3: PROGRAMMING USED
 # ==========================================
 elif selected_page == "Programming used":
     st.title("💻 Programming Stack & Computational Architecture")
@@ -242,12 +242,63 @@ elif selected_page == "Programming used":
     )
 
 # ==========================================
-# PAGE 4: AI/ML LAYER
+# PAGE 4: AI/ML LAYER (EXPANDED DETAILED VERSION)
 # ==========================================
 elif selected_page == "AI/ML layer":
     st.title("🤖 Optimization Engine & Heuristic AI Layer")
+    st.caption("Mathematical formulation of composite cost algorithms balancing physical distance, transit latency, and crowd dynamics.")
+    
+    st.markdown("### 📌 The Master Heuristic Formula")
     st.latex(r"Cost(u, v) = \max\left(w_1 \cdot d_{uv} + w_2 \cdot t_{uv} - w_3 \cdot \left(\frac{D_u + D_v}{2}\right), \, 0.1\right)")
-    st.info("The AI layer balances path lengths with student density weighting using composite cost formulas.")
+    
+    st.markdown("---")
+    st.markdown("### 📐 Mathematical Variables Breakdown")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            """
+            * **$Cost(u, v)$**: Calculated computational edge weight between stop $u$ and stop $v$. Used as edge weights in Dijkstra's Priority Queue.
+            * **$d_{uv}$**: Physical road distance between stop $u$ and stop $v$ measured in kilometers ($km$).
+            * **$t_{uv}$**: Expected travel time under normal driving conditions measured in minutes ($mins$).
+            * **$D_u, D_v$**: Live student crowd passenger densities waiting at stop $u$ and stop $v$.
+            """
+        )
+    with c2:
+        st.markdown(
+            """
+            * **$w_1$ (Distance Weight Coefficient)**: Scaling factor prioritizing shorter geographical physical paths.
+            * **$w_2$ (Time Weight Coefficient)**: Scaling factor penalizing slow traffic routes and transit delays.
+            * **$w_3$ (Crowd Priority Coefficient)**: Optimization reward factor steering buses toward heavily crowded stops to reduce student wait times.
+            * **$\max(\dots, 0.1)$**: Non-zero constraint safeguard preventing negative graph edge weights during Dijkstra execution.
+            """
+        )
+
+    st.markdown("---")
+    st.markdown("### 🎛️ Interactive Heuristic Weight Hyperparameter Tuning")
+    st.write("Adjust the optimization weights below to observe real-time dynamic path weight changes:")
+    
+    col_w1, col_w2, col_w3 = st.columns(3)
+    custom_w1 = col_w1.slider("⚙️ Distance Weight ($w_1$):", 0.0, 2.0, 1.0, 0.1)
+    custom_w2 = col_w2.slider("⚙️ Time Weight ($w_2$):", 0.0, 2.0, 0.5, 0.1)
+    custom_w3 = col_w3.slider("⚙️ Crowd Reward ($w_3$):", 0.00, 0.05, 0.01, 0.005)
+
+    # Live Sample Calculation Table
+    st.markdown("#### 📊 Live Sample Edge Weight Computations:")
+    sample_edges = []
+    for u, v, dist, time_min in road_network[:5]:
+        d_u = st.session_state.stop_densities.get(u, bus_stops[u]["density"])
+        d_v = st.session_state.stop_densities.get(v, bus_stops[v]["density"])
+        avg_d = (d_u + d_v) / 2.0
+        calculated_cost = max((custom_w1 * dist) + (custom_w2 * time_min) - (custom_w3 * avg_d), 0.1)
+        sample_edges.append({
+            "Road Segment (u ➔ v)": f"{u} ➔ {v}",
+            "Distance (d)": f"{dist} km",
+            "Time (t)": f"{time_min} mins",
+            "Avg Density": f"{avg_d:.1f} students",
+            "Calculated Edge Cost": round(calculated_cost, 4)
+        })
+    st.table(pd.DataFrame(sample_edges))
 
 # ==========================================
 # PAGE 5: BUS TIMETABLE & SCHEDULE
